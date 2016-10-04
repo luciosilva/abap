@@ -1,0 +1,26 @@
+*&---------------------------------------------------------------------*
+*& Report  ZTABUADA0113
+*&
+*&---------------------------------------------------------------------*
+*& Programa que mostra a tabuada dado um número
+*& Autor: Lúcio Ferreira da Silva
+*&---------------------------------------------------------------------*
+
+REPORT  ztabuada0113.
+
+SELECTION-SCREEN BEGIN OF BLOCK a1 WITH FRAME TITLE text-t01.
+PARAMETERS p_num TYPE i.
+SELECTION-SCREEN END OF BLOCK a1.
+
+START-OF-SELECTION.
+
+  DATA vl_resultado TYPE i.
+
+  DO 10 TIMES..
+    vl_resultado = p_num * sy-index."sy-index é o contador do DO
+    WRITE: / p_num,
+             ' X ',
+             sy-index,
+             '=',
+             vl_resultado.
+  ENDDO. 
