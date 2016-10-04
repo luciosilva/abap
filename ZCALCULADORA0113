@@ -32,7 +32,7 @@ START-OF-SELECTION.
     WHEN '*'.
       vl_resultado = p_num1 * p_num2.
     WHEN OTHERS.
-      MESSAGE text-t02 TYPE 'I'. "Tipo err, aparece um erro em baixo
+      MESSAGE 'Opção invalida' TYPE 'I'. "Tipo information, aparece um popup
   ENDCASE.
   IF vl_resultado > 0.
     WRITE: text-t03,
