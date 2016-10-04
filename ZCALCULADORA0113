@@ -1,0 +1,40 @@
+*&---------------------------------------------------------------------*
+*& Report  ZCALCULADORA0113
+*&
+*&---------------------------------------------------------------------*
+*& Descrição: Calculadora
+*& Autor: Lúcio Ferreira da Silva - 01.10.2016
+*&---------------------------------------------------------------------*
+
+REPORT  zcalculadora0113.
+
+*DATA: vg_resultado TYPE i. "Variavel global
+
+* Tela de seleção
+SELECTION-SCREEN BEGIN OF BLOCK a1 WITH FRAME TITLE text-t01.
+PARAMETERS: p_num1 TYPE i,
+            p_sinal TYPE c,
+            p_num2 TYPE i.
+SELECTION-SCREEN END OF BLOCK a1.
+
+*Evento Start-of-Selection
+START-OF-SELECTION.
+
+  DATA vl_resultado TYPE i.
+
+  CASE p_sinal.
+    WHEN '+'.
+      vl_resultado = p_num1 + p_num2.
+    WHEN '-'.
+      vl_resultado = p_num1 - p_num2.
+    WHEN '/'.
+      vl_resultado = p_num1 / p_num2.
+    WHEN '*'.
+      vl_resultado = p_num1 * p_num2.
+    WHEN OTHERS.
+      MESSAGE text-t02 TYPE 'I'. "Tipo err, aparece um erro em baixo
+  ENDCASE.
+  IF vl_resultado > 0.
+    WRITE: text-t03,
+            vl_resultado.
+  ENDIF. 
