@@ -1,0 +1,63 @@
+*&---------------------------------------------------------------------*
+*& Report  ZVENDAS1513
+*&
+*&---------------------------------------------------------------------*
+*&
+*&
+*&---------------------------------------------------------------------*
+
+REPORT  zvendas1513 NO STANDARD PAGE HEADING.
+
+TABLES vbak.
+
+TYPES:  BEGIN OF ty_vbak,
+        vbeln TYPE vbak-vbeln,
+        posnr TYPE vbap-posnr,
+        auart TYPE vbak-auart,
+        matnr TYPE vbap-matnr,
+        END OF ty_vbak.
+
+DATA: wa_vbak TYPE ty_vbak.
+
+DATA: ti_vbak TYPE TABLE OF ty_vbak.
+
+SELECTION-SCREEN BEGIN OF BLOCK b1 WITH FRAME TITLE text-t01.
+SELECT-OPTIONS: s_vbeln FOR vbak-vbeln.
+PARAMETERS      p_auart TYPE vbak-auart OBLIGATORY.
+SELECTION-SCREEN END OF BLOCK b1.
+
+TOP-OF-PAGE.
+write: '>>> Relatorio de Vendas <<<<',
+       / 'DOC Vendas',
+        012 'Item',
+        019 'Tipo Doc',
+        028 'Material'.
+uline.
+
+START-OF-SELECTION.
+
+  SELECT
+    vbak~vbeln
+    vbap~posnr
+    vbak~auart
+    vbap~matnr
+  INTO TABLE ti_vbak
+  FROM vbak
+    INNER JOIN
+    vbap
+    ON vbak~vbeln = vbap~vbeln
+  WHERE vbak~vbeln IN s_vbeln
+  AND vbak~auart EQ p_auart.
+
+  IF sy-subrc NE 0.
+    MESSAGE text-m01 TYPE 'I'.
+    stop.
+  ENDIF.
+
+  LOOP AT ti_vbak INTO wa_vbak.
+    WRITE: /
+    wa_vbak-vbeln,
+    wa_vbak-posnr,
+    wa_vbak-auart,
+    028 wa_vbak-matnr.
+  ENDLOOP. 
