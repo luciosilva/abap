@@ -1,0 +1,129 @@
+*&---------------------------------------------------------------------*
+*& Report  ZMATERIAL1513_ALV
+*&
+*&---------------------------------------------------------------------*
+*&
+*&
+*&---------------------------------------------------------------------*
+
+REPORT  zmaterial1513.
+
+TYPE-pools slis.
+*F5 passo a passo
+*F8 segue a vida
+
+* Tabela
+TABLES mara.
+
+*Estrutura - Base para tabela
+TYPES: BEGIN OF ty_mara,
+        matnr TYPE mara-matnr,
+        ersda TYPE mara-ersda,
+        meins TYPE mara-meins,
+        brgew TYPE mara-brgew,
+        ntgew TYPE mara-ntgew,
+        difer TYPE mara-brgew,
+       END OF ty_mara,
+      BEGIN OF ty_makt,
+        matnr TYPE makt-matnr,
+        maktx TYPE makt-maktx,
+      END OF ty_makt,
+      BEGIN OF ty_alv,
+        matnr TYPE mara-matnr,
+        maktx TYPE makt-maktx,
+        ersda TYPE mara-ersda,
+        meins TYPE mara-meins,
+        brgew TYPE mara-brgew,
+        ntgew TYPE mara-ntgew,
+        difer TYPE mara-brgew,
+       END OF ty_alv.
+
+DATA: wa_mara TYPE ty_mara,
+      wa_makt TYPE ty_makt,
+      wa_alv  TYPE ty_alv.
+
+*Tabela interna
+DATA: ti_mara TYPE TABLE OF ty_mara,
+      ti_makt TYPE TABLE OF ty_makt,
+      ti_alv TYPE TABLE OF ty_alv,
+      ti_fieldcat1 type slis_t_fieldcat_alv,
+      ti_fieldcat TYPE slis_t_fieldcat_alv WITH HEADER LINE.
+*Aqui cria a tabela com as 220 colunas
+*data: ti_mara type TABLE OF mara
+
+
+* Tela de Seleção
+* Select-options exige que a tabela seja declarada em cima.
+* Ele cria uma estrutura de tabela igual a declarada para armazenar o range selecionado
+SELECTION-SCREEN BEGIN OF BLOCK b1 WITH FRAME TITLE text-t01.
+SELECT-OPTIONS: s_matnr FOR mara-matnr, " Nº do material
+                s_ersda FOR mara-ersda. " Data de criação
+*Parametro Obrigatorio
+PARAMETERS      p_meins TYPE mara-meins OBLIGATORY.
+SELECTION-SCREEN END OF BLOCK b1.
+
+*Evento é disparado quando é executado o report
+"Seleção dos dados
+  "Gravação dos dados do alv
+
+  LOOP AT ti_mara INTO wa_mara.
+
+    wa_mara-difer = wa_mara-brgew - wa_mara-ntgew.
+
+    "Valida o se o valor é diferente de zero, se não for, volta para o LOOP
+    CHECK wa_mara-difer NE 0.
+    " Igual ao IF wa_mara-difer NE 0.
+
+    "leitura em outra tabela interna
+    "READ TABLE ti_makt INTO wa_makt WITH KEY matnr = wa_mara-matnr.
+    READ TABLE ti_makt INTO wa_makt WITH KEY matnr = wa_mara-matnr BINARY SEARCH.
+    wa_alv-matnr = wa_mara-matnr.
+    wa_alv-maktx = wa_makt-maktx.
+    wa_alv-ersda = wa_mara-ersda.
+    wa_alv-meins = wa_mara-meins.
+    wa_alv-brgew = wa_mara-brgew.
+    wa_alv-ntgew = wa_mara-ntgew.
+    wa_alv-difer = wa_mara-difer.
+    APPEND wa_alv TO ti_alv.
+  ENDLOOP.
+
+ " Gravação do fieldcat
+
+  TI_FIELDCAT-fieldname = 'MATNR'.
+  ti_fieldcat-seltext_l = 'Material'.
+  append ti_fieldcat.
+  TI_FIELDCAT-fieldname = 'MAKTX'.
+  ti_fieldcat-seltext_l = 'Decrição do Material'.
+  append ti_fieldcat.
+  TI_FIELDCAT-fieldname = 'ERSDA'.
+  ti_fieldcat-seltext_l = 'Data Criação'.
+  append ti_fieldcat.
+  TI_FIELDCAT-fieldname = 'MEINS'.
+  ti_fieldcat-seltext_l = 'Unidade'.
+  append ti_fieldcat.
+  TI_FIELDCAT-fieldname = 'BRGEW'.
+  ti_fieldcat-seltext_l = 'Peso Bruto'.
+  append ti_fieldcat.
+  TI_FIELDCAT-fieldname = 'NTGEW'.
+  ti_fieldcat-seltext_l = 'Peso Liquido'.
+  append ti_fieldcat.
+  TI_FIELDCAT-fieldname = 'DIFER'.
+  ti_fieldcat-seltext_l = 'Diferença'.
+  append ti_fieldcat.
+
+  ti_fieldcat1[] = ti_fieldcat[].
+
+"Chama ALV
+
+CALL FUNCTION 'REUSE_ALV_GRID_DISPLAY'
+ EXPORTING
+   IT_FIELDCAT                       = ti_fieldcat1
+  TABLES
+    t_outtab                          = TI_ALV
+ EXCEPTIONS
+   PROGRAM_ERROR                     = 1
+   OTHERS                            = 2.
+IF sy-subrc <> 0.
+ MESSAGE ID SY-MSGID TYPE SY-MSGTY NUMBER SY-MSGNO
+         WITH SY-MSGV1 SY-MSGV2 SY-MSGV3 SY-MSGV4.
+ENDIF. 
